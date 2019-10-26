@@ -23,6 +23,7 @@
 #include "cmsis_os.h"
 #include "fatfs.h"
 #include "usb_host.h"
+#include "ESPWifi.hpp"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -108,6 +109,8 @@ extern void GRAPHICS_Init(void);
 extern void GRAPHICS_MainTask(void);
 void StartDefaultTask(void const * argument);
 
+uint8_t buffer[3];
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -121,6 +124,7 @@ void StartDefaultTask(void const * argument);
   * @brief  The application entry point.
   * @retval int
   */
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -165,7 +169,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  ESPController _esp;
   /* USER CODE END 2 */
 
 /* Initialise the graphical hardware */
@@ -173,8 +177,7 @@ int main(void)
 
   /* Initialise the graphical stack engine */
   GRAPHICS_Init();
-      
-  
+
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -200,7 +203,6 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
   /* Start scheduler */
   osKernelStart();
   
@@ -210,6 +212,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+//	  this would be handled in a controller triggered by a user clicking a button
+//	  but for this test we could leave it in here, the result will be it keeps connecting
+
+
+       _esp.list_wifi_networks_in_range();
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -1088,7 +1097,8 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+//  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE; ORIGINAL
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_RTS;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
@@ -1099,8 +1109,14 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-
 }
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+	if(huart->Instance == USART1){
+
+	}
+}
+
 
 /**
   * @brief USART6 Initialization Function
@@ -1134,8 +1150,8 @@ static void MX_USART6_UART_Init(void)
   /* USER CODE BEGIN USART6_Init 2 */
 
   /* USER CODE END USART6_Init 2 */
-
 }
+
 
 /**
   * @brief GPIO Initialization Function
